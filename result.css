@@ -1,0 +1,202 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #E6F7FF;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Main container centralizado */
+.main-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    padding: 40px 20px;
+}
+
+/* Transcrição estilizada */
+.transcription-container {
+    background: #ffffff;
+    border: 2px dashed #007bff;
+    padding: 30px;
+    width: 100%;
+    max-width: 900px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.transcription-container h2 {
+    color: #007bff;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+#transcription-text {
+    width: 100%;
+    height: 300px;
+    background: #f8f8f8;
+    border: 2px solid #007bff;
+    padding: 15px;
+    font-size: 16px;
+    resize: none;
+    outline: none;
+    margin-bottom: 20px;
+    border-radius: 10px;
+}
+
+/* Botões da transcrição */
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+button, a {
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: 0.3s;
+    margin: 20px auto 0 auto;
+    display: block;
+    text-decoration: none;
+    font-size: 10px;
+}
+
+button:hover, a:hover {
+    background: #005fc1;
+}
+
+/* Player fixo estilo Spotify */
+.audio-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 30px;
+    z-index: 100;
+}
+
+/* Album e filename */
+.album-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.album-art {
+    width: 60px;
+    height: 60px;
+    background: #ffffff;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Animação para girar o CD */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.album-art img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: spin 4s linear infinite; /* Duração e velocidade */
+}
+
+.filename {
+    font-size: 16px;
+    font-weight: bold;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Controles */
+.controls {
+    margin-bottom: auto;
+    align-items: center;
+    gap: 30px;
+}
+
+.control-btn {
+    background: none;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+}
+
+.control-btn img {
+    filter: invert(1); /* Para deixar ícones brancos */
+    transition: transform 0.2s;
+}
+
+.control-btn:hover img {
+    transform: scale(1.1);
+}
+
+/* Barra de progresso */
+.progress-bar {
+    position: relative;
+    width: 25%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background: #ffffff;
+    width: 0%;
+    transition: width 0.3s;
+}
+
+/* Remove estilo default do audio */
+audio {
+    display: none;
+}
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.history-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.history-buttons button, .history-buttons a {
+    background: none;
+    border: none;
+    cursor: pointer;
+}

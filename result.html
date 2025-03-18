@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resultado - SimpliTranscriber</title>
+    <link rel="stylesheet" href="/static/result.css" />
+    <!-- Google Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            background-color: #E6F7FF;
+        }
+
+        .main-container {
+            padding: 20px;
+            padding-bottom: 120px; /* Espaço para o player fixo */
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .button-container {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .button-container button, .button-container a {
+            padding: 8px 16px;
+            border: none;
+            background-color: #1DB954;
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .history-container {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .history-container h3 {
+            margin-bottom: 10px;
+        }
+
+        .history-list {
+            list-style-type: none;
+            padding: 0;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .history-list li {
+            background-color: #f0f0f0;
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .history-list li:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* Player fixo */
+        .audio-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #007bff;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+        }
+
+        .album-section, .controls, .progress-bar {
+            display: flex;
+            align-items: center;
+        }
+
+        .album-section {
+            gap: 10px;
+        }
+
+        .album-art img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .filename {
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: white;
+        }
+
+        .controls {
+            flex-direction: row;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .control-btn i {
+            color: white;
+            font-size: 32px;
+            cursor: pointer;
+        }
+
+        .progress-bar {
+            width: 25%;
+            height: 4px;
+            background-color: #ccc;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: #1DB954;
+            width: 0%;
+        }
+
+        .rotating {
+            animation: spin 4s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Container da Transcrição -->
+        <div class="transcription-container">
+            <h2>TRANSCRIÇÃO</h2>
+            <textarea id="transcription-text" readonly>{{ text }}</textarea>
+
+            <!-- Botões -->
+            <div class="button-container">
+                <button id="copy-btn">COPIAR</button>
+                <a href="/download_txt/{{ filename }}" download>BAIXAR</a>
+            </div>
+
+            <!-- Histórico -->
+            <div class="history-container">
+                <h3>Histórico de Transcrições</h3>
+                <ul class="history-list">
+                    {% for item in history %}
+                        <li onclick="loadHistory('{{ item.filename }}')">{{ item.filename|truncate(30, True, '...') }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Fixo Spotify Style -->
+    <div class="audio-container">
+        <div class="album-section">
+            <div class="album-art">
+                <img id="cd-logo" src="/static/logo.png" alt="CD Logo">
+            </div>
+            <p class="filename">{{ filename|truncate(25, True, '...') }}</p>
+        </div>
+
+        <div class="controls">
+            <button id="prev-btn" class="control-btn">
+                <i class="material-icons">skip_previous</i>
+            </button>
+            <button id="play-pause-btn" class="control-btn">
+                <i id="play-pause-icon" class="material-icons">pause</i>
+            </button>
+            <button id="next-btn" class="control-btn">
+                <i class="material-icons">skip_next</i>
+            </button>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+
+        <audio id="audio-player" autoplay>
+            <source src="/uploads/{{ filename }}" type="audio/mp3" />
+            <track src="/uploads/{{ filename.split('.')[0] }}.vtt" kind="subtitles" srclang="pt" label="Português" default>
+        </audio>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const copyBtn = document.getElementById("copy-btn");
+            const transcriptionText = document.getElementById("transcription-text");
+            const audioPlayer = document.getElementById("audio-player");
+            const playPauseBtn = document.getElementById("play-pause-btn");
+            const playPauseIcon = document.getElementById("play-pause-icon");
+            const progress = document.getElementById("progress");
+            const cdLogo = document.getElementById("cd-logo");
+
+            copyBtn.addEventListener("click", function () {
+                navigator.clipboard.writeText(transcriptionText.value).then(() => {
+                    copyBtn.textContent = "COPIADO!";
+                    setTimeout(() => (copyBtn.textContent = "COPIAR"), 2000);
+                });
+            });
+
+            function togglePlayPause() {
+                if (audioPlayer.paused) {
+                    audioPlayer.play();
+                } else {
+                    audioPlayer.pause();
+                }
+            }
+
+            playPauseBtn.addEventListener("click", togglePlayPause);
+
+            audioPlayer.addEventListener("timeupdate", function () {
+                const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                progress.style.width = percent + "%";
+            });
+
+            audioPlayer.addEventListener("play", function () {
+                playPauseIcon.textContent = "pause";
+                cdLogo.classList.add("rotating");
+            });
+
+            audioPlayer.addEventListener("pause", function () {
+                playPauseIcon.textContent = "play_arrow";
+                cdLogo.classList.remove("rotating");
+            });
+
+            document.addEventListener("keydown", function (event) {
+                if (event.code === "Space" && document.activeElement.tagName !== "TEXTAREA") {
+                    event.preventDefault();
+                    togglePlayPause();
+                }
+            });
+        });
+
+        function loadHistory(filename) {
+            window.location.href = `/result/${filename}`;
+        }
+    </script>
+</body>
+</html>
